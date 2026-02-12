@@ -1,0 +1,879 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trading Journal — Fixed</title>
+  
+  <style>
+   
+      DESIGN SYSTEM
+========================= */
+:root {
+  --bg: #f4f6f9;
+  --bg-soft: #eef1f6;
+  --text: #0f172a;
+  --muted: #64748b;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --accent: #0b74de;
+  --accent-2: #2fc1a6;
+  --danger: #dc2626;
+  --radius: 14px;
+  --shadow: 0 12px 30px rgba(15,23,42,.08);
+  --blur: saturate(180%) blur(12px);
+}
+
+.name{ color: black;} 
+/* Top fixed bar */
+.time-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 56px;
+  background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 18px;
+  color: #fff;
+  font-family: system-ui, Arial, sans-serif;
+  font-size: 14px;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Each city+time block */
+.time-header > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.08);
+}
+
+/* City name */
+.city {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Time value */
+.time {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Scrollbar styling (optional, clean look) */
+.time-header::-webkit-scrollbar {
+  height: 4px;
+}
+.time-header::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+}
+
+/* Search button placeholder (right side) */
+.search-btn {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.search-btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Push page content down so it doesn't hide under bar */
+body {
+  padding-top: 52px;
+}
+   
+    /* layout */
+    .page{max-width:1100px;margin:2px auto;padding:5px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:50vh 50vh;gap:5px}
+    .card{background:var(--card-bg);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(24,39,75,0.06);display:flex;flex-direction:column}
+    .header-title{font-size:18px;font-weight:800}
+    .muted{color:var(--muted);font-size:13px}
+   
+    /* form & pairs */
+    .form{display:flex;gap:8px;align-items:center;margin-top:6px}
+    .form input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:15px}
+    .form button{padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+    .pairs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}
+    .pair{padding:10px;border-radius:8px;border:1px dashed #e3e7ee;background:#fbfdff;display:flex;justify-content:space-between;align-items:center}
+    .pair button{background:transparent;border:0;color:#d23;cursor:pointer}
+    
+    /* playbook */
+    .playbook-header{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .playbook-header form{display:flex;gap:8px;align-items:center}
+    .playbook-header input[type=text]{padding:8px;border-radius:8px;border:1px solid #ddd}
+    .playbook-header button{padding:8px 10px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+    .rules{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+    .rule{display:flex;align-items:center;gap:10px}
+    .score{margin-top:12px;display:flex;align-items:center;gap:12px}
+    .progress{height:14px;background:#e9eef6;border-radius:999px;overflow:hidden;flex:1}
+    .progress > i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#2fc1a6)}
+    .percent{min-width:56px;text-align:right;font-weight:700}
+    
+    /*Dark mode*/
+    /* Default (light mode) */
+.dark-mode {
+  --bg: #0b122s112a;
+  --bg-soft: #020617;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --card: #020617;
+  --border: #1e293b;
+  --accent: #38bdf8;
+  --accent-2: #22c55e;
+  
+--bg: #0f172a;
+  
+  --card: #1e293b;
+  --border: #334155;
+}
+
+/* =========================
+   NOTES PANEL
+========================= */
+.panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 16px;
+  max-height: 500px;
+  overflow: hidden;
+  transition: all .4s ease;
+}
+
+.panel.hidden {
+  max-height: 0;
+  padding: 0 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+
+
+
+/* Dark mode */
+.dark-mode {
+  
+}
+
+/* Apply variables */
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+   
+    /* bottom notes */
+    .bottom {grid-column:1 / -1;display:flex;align-items:center;justify-content:center}
+    .panel{width:100%;max-width:1080px;padding:18px;border-radius:12px;border:1px;}
+    textarea{width:100%;height:160px;padding:12px;border-radius:8px;border:1px solid #e6eef8;resize:vertical}
+    
+    /* modal viewer */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,18,32,0.5);z-index:60}
+    .modal.open{display:flex}
+    .viewer{width:780px;max-width:94%;background:#fff;border-radius:12px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.2)}
+    .cards{display:flex;overflow:hidden;border-radius:8px;border:1px solid #eef3fb;height:360px}
+    .card-view{min-width:100%;transition:transform 300ms ease;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px}
+    .card-view img{max-width:100%;max-height:260px;border-radius:6px;object-fit:contain}
+    .upload-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;color:#777;background:rgba(255,255,255,0.6);cursor:pointer}
+    .viewer-controls{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+    .viewer-controls button{padding:8px 10px;border-radius:8px;border:0;background:#0b74de;color:#fff;font-weight:700;cursor:pointer}
+    .small-btn{padding:8px 10px;border-radius:8px;border:0;background:#2a9d8f;color:#fff;font-weight:700;cursor:pointer}
+   @media (max-width:900px){ .page{grid-template-columns:1fr;grid-template-rows:auto} .time-header{left:auto ;right:auto;text-align:left} }
+   
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 4px;
+  text-align: center;
+}
+#themeToggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 20px;
+  z-index: 999;
+}
+
+  </style>
+  
+  <!-- libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  
+</head>
+<body>
+  <div class="time-header" id="timeHeader" aria-live="polite"></div>
+  <div class="form" style="margin-top:6px">
+  <button id="toggleBtn">Show panel</button>
+        <input type="text" id="pairInput" placeholder="e.g. EURUSD, GBPJPY or BTCUSD" autocomplete="off" >
+        <button id="addPairBtn" type="button">Add</button>
+      </div>
+      
+
+
+  <main class="page" id="app">
+    <section class="card" id="leftCol">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="header-title">Trading Journal</div>
+          <div class="muted">Add trading pairs and keep a quick watch list</div>
+        </div>
+      </div>
+
+      
+
+      <div class="pairs-top" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">My Trading Pairs</div>
+          <div class="muted">Live list</div>
+        </div>
+        <div class="pairs-grid" id="pairsGrid"></div>
+      </div>
+    </section>
+
+    <section class="card playbook" id="rightCol">
+      <div class="playbook-header">
+       
+
+        <div>
+          <form id="playbookForm" onsubmit="return false;">
+            <input type="text" id="playbookPair" placeholder="Pair name for this playbook">
+            <button id="setPlaybookBtn" type="button">Set</button>
+          </form>
+          <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;">
+            <button id="openViewerBtn" type="button">Open Playbook Viewer</button>
+            <button id="submitBtn" class="small-btn" type="button">Submit (Save ZIP)</button>
+          </div>
+        </div>
+      </div>
+      <!-- Trading Errors -->
+<div style="margin-top:16px">
+  <div style="font-weight:700;margin-bottom:6px">Trading Errors</div>
+
+  <div class="form">
+    <input type="text" id="errorInput" placeholder="e.g. Entered too early">
+    <button type="button" id="addErrorBtn">Add</button>
+  </div>
+
+  <div class="rules" id="errorsList"></div>
+</div>
+ <div>
+          <div class="header-title">Playbook</div>
+          <div class="muted">Rules to follow before and during a trade</div>
+        </div>
+
+      <div style="margin-top:12px">
+        <div class="rules" id="rulesList"></div>
+
+        <div class="score">
+          <div style="width:170px">
+            <div id="randomHeading" style="font-weight:700">Readiness</div>
+            <div class="muted" style="font-size:12px">Checklist completion</div>
+          </div>
+          <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+          <div class="percent" id="percentText">0%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bottom">
+      <div class="panel hidden" id="panel">
+        <div ><div>
+            <div style="font-weight:800">Trade Notes</div>
+            <div class="muted">Quick free-text notes about today's session</div>
+          </div>
+          <div class="muted">Autosave: local only</div>
+        </div>
+        <textarea id="notes" placeholder="Write quick notes..."></textarea>
+      </div>
+    </section>
+<div class="box">
+  <div class="form" style="padding: 6px 6px;  border-radius: 10px; background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);">
+    <input id="pair" placeholder="USD" maxlength="3" >
+    <input id="datetime" type="datetime-local">
+    <input id="news" placeholder="CPI">
+    <button onclick="addEvent()">Add</button>
+  </div>
+
+  <table id="eventTable" padding="6px">
+    <thead>
+      <tr>
+        <th>PAIR</th>
+        <th>DATE & TIME</th>
+        <th>NEWS</th>
+        <th>ACTIONS</th> <!-- added but id/class unchanged -->
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+  </main>
+
+  <!-- viewer modal -->
+  <div class="modal" id="viewerModal" role="dialog" aria-modal="true">
+    <div class="viewer" role="document">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div id="viewerTitle" style="font-weight:800">Playbook Viewer</div>
+          <div class="muted" id="viewerPair">No pair set</div>
+        </div>
+        <div><button id="closeViewer" type="button">Close</button></div>
+      </div>
+
+      <div class="cards" id="cardsTrack">
+        <div class="card-view" data-index="0">
+          <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
+            <div style="font-weight:700;margin-bottom:8px">Image 1</div>
+            <div style="width:100%;height:260px;border:1px dashed #e6eef8;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#fbfdff">
+              <img id="viewerImg0" src="" alt="img0" style="max-width:100%;max-height:100%;object-fit:contain;display:none">
+              <div class="upload-overlay" id="upload0">+</div>
+              <input type="file" id="file0" accept="image/*" style="display:none">
+            </div>
+          </div>
+        </div>
+
+        <div class="card-view" data-index="1">
+          <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
+            <div style="font-weight:700;margin-bottom:8px">Image 2</div>
+            <div style="width:100%;height:260px;border:1px dashed #e6eef8;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#fbfdff">
+              <img id="viewerImg1" src="" alt="img1" style="max-width:100%;max-height:100%;object-fit:contain;display:none">
+              <div class="upload-overlay" id="upload1">+</div>
+              <input type="file" id="file1" accept="image/*" style="display:none">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="viewer-controls">
+        <div>
+          <button id="prevBtn" type="button">Prev</button>
+          <button id="nextBtn" type="button">Next</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="savePlaybookImages" class="small-btn" type="button">Save Playbook Images</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- dark mode -->
+ <button id="themeToggle">🌙</button>
+
+  
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // ------------ Time header ------------
+      const zones = [
+        {tz:'Africa/Kampala',label:'Uganda'},
+        {tz:'America/New_York',label:'New York'},
+        {tz:'Europe/London',label:'London'},
+        {tz:'Asia/Tokyo',label:'Tokyo',},
+        {tz:'Australia/Sydney',label:'Sydney'},
+        {tz:'Europe/Zurich',label:'Switzerland'},
+        {tz:'Pacific/Auckland',label:'New Zealand'}
+      ];
+      function fmt(zone){
+        try{
+          return new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,timeZone:zone}).format(new Date());
+        }catch(e){ return 'n/a'; }
+      }
+      function updateTimes(){
+        const container = document.getElementById('timeHeader');
+        container.innerHTML = '';
+        zones.forEach(z=>{
+          const row = document.createElement('div');
+          row.style.marginBottom = '6px';
+          row.innerHTML = `<div class="city">${z.label} </div><div class="time">${fmt(z.tz)}</div>`;
+          container.appendChild(row);
+        });
+      }
+      updateTimes();
+      setInterval(updateTimes, 1000);
+
+      
+      // ------------ Pairs list ------------
+      const pairsGrid = document.getElementById('pairsGrid');
+      const pairInput = document.getElementById('pairInput');
+      const addPairBtn = document.getElementById('addPairBtn');
+      let pairs = [];
+      try { const saved = JSON.parse(localStorage.getItem('tj_pairs')); if (Array.isArray(saved)) pairs = saved; } catch(e){ pairs = []; }
+
+      function renderPairs(){
+        pairsGrid.innerHTML = '';
+        pairs.forEach((p, idx) => {
+          const el = document.createElement('div');
+          el.className = 'pair';
+          el.innerHTML = `<div class="name">${p}</div><div><button title="Remove" data-idx="${idx}">✖</button></div>`;
+          pairsGrid.appendChild(el);
+        });
+        try{ localStorage.setItem('tj_pairs', JSON.stringify(pairs)); }catch(e){}
+      }
+
+      addPairBtn.addEventListener('click', () => {
+        const v = pairInput.value.trim();
+        if (!v) { alert('Enter a pair'); return; }
+        const items = v.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+        items.forEach(it => { if (!pairs.includes(it)) pairs.push(it); });
+        pairInput.value = '';
+        renderPairs();
+      });
+
+      pairsGrid.addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const idx = Number(btn.dataset.idx);
+        if (!isNaN(idx)) {
+          pairs.splice(idx, 1);
+          renderPairs();
+        }
+      });
+
+      renderPairs();
+
+     
+      // ------------ Playbook rules ------------
+      const rules = [
+        'OrderFlow',
+        'Killzone',
+        'Premium and Discount',
+        'Manipulation/Correlation',
+        'Entry Trigger/ BreakerBlock'
+      ];
+      const rulesList = document.getElementById('rulesList');
+      function buildRules(){
+        rulesList.innerHTML = '';
+        rules.forEach((r,i)=>{
+          const d = document.createElement('div'); d.className='rule';
+          d.innerHTML = `<input type="checkbox" id="rule_${i}" data-idx="${i}"><label for="rule_${i}">${r}</label>`;
+          rulesList.appendChild(d);
+        });
+      }
+      buildRules();
+
+      function updateScore(){
+        const checked = Array.from(rulesList.querySelectorAll('input[type=checkbox]')).filter(i=>i.checked).length;
+        const percent = Math.round((checked / rules.length) * 100);
+        document.getElementById('percentText').textContent = percent + '%';
+        document.getElementById('progressBar').style.width = percent + '%';
+        const headings = ['Edge Meter','Risk Readiness','Trade Score','Plan Strength','Execution Rating','Setup Quality'];
+        document.getElementById('randomHeading').textContent = headings[Math.floor(Math.random()*headings.length)];
+        try{ const states = Array.from(rulesList.querySelectorAll('input[type=checkbox]')).map(i=>i.checked); localStorage.setItem('tj_rules', JSON.stringify(states)); }catch(e){}
+      }
+      
+      // restore rules
+      try{ const savedRules = JSON.parse(localStorage.getItem('tj_rules')); if(Array.isArray(savedRules)){ savedRules.forEach((v,i)=>{ const el = document.getElementById('rule_'+i); if(el) el.checked = !!v; }); } }catch(e){}
+      rulesList.addEventListener('change', updateScore);
+      updateScore();
+
+     
+      // notes autosave
+      const notesEl = document.getElementById('notes');
+      try{ notesEl.value = localStorage.getItem('tj_notes') || ''; }catch(e){}
+      let notesTimer;
+      notesEl.addEventListener('input', ()=>{ clearTimeout(notesTimer); notesTimer = setTimeout(()=>{ try{ localStorage.setItem('tj_notes', notesEl.value); }catch(e){} },600); });
+
+      
+      // ------------ Viewer modal ------------
+      const viewerModal = document.getElementById('viewerModal');
+      const cardsTrack = document.getElementById('cardsTrack');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const closeViewer = document.getElementById('closeViewer');
+      const openViewerBtn = document.getElementById('openViewerBtn');
+      const setPlaybookBtn = document.getElementById('setPlaybookBtn');
+      const playbookPairInput = document.getElementById('playbookPair');
+      const viewerPair = document.getElementById('viewerPair');
+      const viewerTitle = document.getElementById('viewerTitle');
+      const savePlaybookImages = document.getElementById('savePlaybookImages');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const viewerImgs = [document.getElementById('viewerImg0'), document.getElementById('viewerImg1')];
+      const fileInputs = [document.getElementById('file0'), document.getElementById('file1')];
+      const uploadButtons = [document.getElementById('upload0'), document.getElementById('upload1')];
+
+      let curIndex = 0;
+      function setTrack(){ cardsTrack.style.transform = `translateX(${-curIndex * 100}%)`; }
+
+      prevBtn.addEventListener('click', ()=>{ curIndex = Math.max(0, curIndex-1); setTrack(); });
+      nextBtn.addEventListener('click', ()=>{ curIndex = Math.min(1, curIndex+1); setTrack(); });
+      closeViewer.addEventListener('click', ()=> viewerModal.classList.remove('open'));
+
+      function showViewer(pairName){
+        viewerPair.textContent = pairName ? pairName : 'No pair set';
+        viewerTitle.textContent = pairName ? `Playbook Viewer — ${pairName}` : 'Playbook Viewer';
+        const key = 'playbook_images_' + (pairName || 'default');
+        try{
+          const saved = JSON.parse(localStorage.getItem(key));
+          if(Array.isArray(saved)){
+            saved.forEach((d,i)=>{ if(d){ viewerImgs[i].src = d; viewerImgs[i].style.display = 'block'; } else { viewerImgs[i].src=''; viewerImgs[i].style.display='none'; } });
+          } else {
+            viewerImgs.forEach(img=>{ img.src=''; img.style.display='none'; });
+          }
+        }catch(e){
+          viewerImgs.forEach(img=>{ img.src=''; img.style.display='none'; });
+        }
+        curIndex = 0; setTrack();
+        viewerModal.classList.add('open');
+      }
+
+      openViewerBtn.addEventListener('click', ()=>{
+        const pair = localStorage.getItem('tj_playbook_pair') || '';
+        showViewer(pair);
+      });
+
+      setPlaybookBtn.addEventListener('click', ()=>{
+        const v = playbookPairInput.value.trim();
+        if(!v){ alert('Enter a pair name to set'); return; }
+        localStorage.setItem('tj_playbook_pair', v.toUpperCase());
+        playbookPairInput.value = '';
+        alert('Playbook pair set to: ' + v.toUpperCase());
+        // update header immediately
+        viewerPair.textContent = v.toUpperCase();
+      });
+
+     
+      // upload handlers
+      uploadButtons.forEach((btn, i) => {
+        btn.addEventListener('click', ()=> fileInputs[i].click());
+        fileInputs[i].addEventListener('change', (ev) => {
+          const f = ev.target.files[0]; if(!f) return;
+          const reader = new FileReader();
+          reader.onload = (e) => { viewerImgs[i].src = e.target.result; viewerImgs[i].style.display = 'block'; };
+          reader.readAsDataURL(f);
+        });
+      });
+
+      savePlaybookImages.addEventListener('click', ()=>{
+        const pair = localStorage.getItem('tj_playbook_pair') || '';
+        const key = 'playbook_images_' + (pair || 'default');
+        const arr = viewerImgs.map(img => img.src ? img.src : null);
+        try{ localStorage.setItem(key, JSON.stringify(arr)); alert('Playbook images saved for ' + (pair || 'default')); }catch(e){ alert('Save failed'); }
+      });
+
+      
+      // close when clicking outside
+      viewerModal.addEventListener('click', (e)=>{ if(e.target === viewerModal) viewerModal.classList.remove('open'); });
+
+      // restore saved pair to header
+      (function restorePlaybookPair(){
+        const v = localStorage.getItem('tj_playbook_pair');
+        if(v){ viewerPair.textContent = v; }
+      })();
+
+      
+      // ------------ Submit -> ZIP ------------
+      function isoSafeDate(){
+        const d = new Date(); const pad = n => String(n).padStart(2,'0');
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      }
+
+      function dataURLtoBlob(dataurl){
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length; const u8 = new Uint8Array(n);
+        while(n--){ u8[n] = bstr.charCodeAt(n); }
+        return new Blob([u8], {type: mime});
+      }
+
+      submitBtn.addEventListener('click', async ()=>{
+        try{
+          const pair = localStorage.getItem('tj_playbook_pair') || 'default';
+          const key = 'playbook_images_' + (pair || 'default');
+          let images = [];
+          try{ const saved = JSON.parse(localStorage.getItem(key)); if(Array.isArray(saved)) images = saved; }catch(e){ images = []; }
+
+          const rulesState = Array.from(document.querySelectorAll('#rulesList input[type=checkbox]')).map((cb,i)=>({ rule: rules[i], checked: !!cb.checked }));
+          const pairsList = pairs.slice();
+          const notes = document.getElementById('notes').value || '';
+
+          const meta = { savedAt: new Date().toISOString(), playbookPair: pair, rules: rulesState, pairs: pairsList, notes };
+
+          const zip = new JSZip();
+          zip.file('metadata.json', JSON.stringify(meta, null, 2));
+          
+          // images
+          for(let i=0;i<images.length;i++){
+            const d = images[i];
+            if(!d) continue;
+            try{
+              const blob = dataURLtoBlob(d);
+              zip.file(`screenshots/${pair}_img${i+1}.png`, blob);
+            }catch(err){
+              console.error('image pack error', err);
+            }
+          }
+          const playbookText = rulesState.map(r=>`[${r.checked ? 'x' : ' '}] ${r.rule}`).join('\n');
+          zip.file('playbook.txt', playbookText);
+          zip.file('trading_pairs.json', JSON.stringify(pairsList, null, 2));
+
+          const content = await zip.generateAsync({type:'blob'});
+          const fname = `trade-journal_${isoSafeDate()}.zip`;
+          saveAs(content, fname);
+          alert('ZIP package created: ' + fname);
+        }catch(e){
+          console.error(e);
+          alert('Failed to create ZIP package. See console for details.');
+        }
+      });
+          //dark mode
+    
+  const toggleBtn = document.getElementById("themeToggle");
+  const root = document.documentElement;
+
+  // Load saved theme
+  if (localStorage.getItem("theme") === "dark") {
+    root.classList.add("dark-mode");
+    toggleBtn.textContent = "☀️";
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    root.classList.toggle("dark-mode");
+
+    const isDark = root.classList.contains("dark-mode");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    toggleBtn.textContent = isDark ? "☀️" : "🌙";
+  });
+  
+  var btn = document.getElementById("toggleBtn");
+  var card = document.getElementById("panel");
+  
+
+  btn.onclick = function () {
+    if (card.classList.contains("hidden")) 
+    {
+      card.classList.remove("hidden");
+      btn.innerText = "Hide panel";
+    }
+    else {
+      card.classList.add("hidden");
+      btn.innerText = "Show panel";
+    }
+  };
+
+    }); // DOMContentLoaded
+    
+
+
+  
+
+  let count = 0;
+  const maxEvents = 10;
+
+  function formatDateTimeWithoutYear(dtLocalValue) {
+    // dtLocalValue: "YYYY-MM-DDTHH:MM"
+    if (!dtLocalValue) return "";
+    const d = new Date(dtLocalValue);
+    if (isNaN(d)) return dtLocalValue.replace("T", " ");
+
+    // weekday short, day numeric, month short, time hh:mm — no year
+    const weekday = d.toLocaleDateString(undefined, { weekday: 'short' }); // e.g. Mon
+    const day = d.toLocaleDateString(undefined, { day: 'numeric' });       // e.g. 12
+    const month = d.toLocaleDateString(undefined, { month: 'short' });     // e.g. Jan
+    // use 24-hour format without seconds
+    const hour = d.getHours().toString().padStart(2, '0');
+    const minute = d.getMinutes().toString().padStart(2, '0');
+
+    return `${weekday}, ${day} ${month} — ${hour}:${minute}`;
+  }
+
+  function addEvent() {
+    if (count >= maxEvents) {
+      alert("Maximum of 10 events allowed");
+      return;
+    }
+
+    const pair = document.getElementById("pair");
+    const datetime = document.getElementById("datetime");
+    const news = document.getElementById("news");
+
+    if (!pair || !datetime || !news) {
+      console.warn("Missing input elements (#pair, #datetime, #news).");
+      return;
+    }
+
+    if (!pair.value || !datetime.value || !news.value) return;
+
+    const tbody = document.querySelector("#eventTable tbody");
+    const row = tbody.insertRow();
+
+    // Pair: 3 letters, uppercase
+    const cellPair = row.insertCell(0);
+    cellPair.innerText = pair.value.toUpperCase().slice(0, 3);
+
+    // DateTime: formatted without year, includes weekday
+    const cellDt = row.insertCell(1);
+    cellDt.innerText = formatDateTimeWithoutYear(datetime.value);
+
+    // News
+    const cellNews = row.insertCell(2);
+    cellNews.innerText = news.value;
+
+    // Actions: Delete button (keeps your ids/classes unchanged)
+    const cellActions = row.insertCell(3);
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "action-btn btn-delete";
+    delBtn.textContent = "Delete";
+    delBtn.title = "Remove this event";
+    delBtn.onclick = function () {
+      // remove the row from tbody
+      if (row && row.parentNode) row.parentNode.removeChild(row);
+      count = Math.max(0, count - 1);
+    };
+    cellActions.appendChild(delBtn);
+
+    // Clear inputs
+    pair.value = "";
+    datetime.value = "";
+    news.value = "";
+
+    count++;
+  }
+
+const STORAGE_KEY = "saved_events";
+
+// LOAD data on page refresh
+function loadTable() {
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  const tbody = document.querySelector("#eventTable tbody");
+
+  tbody.innerHTML = "";
+  count = 0;
+
+  data.forEach(item => {
+    const row = tbody.insertRow();
+
+    row.insertCell(0).innerText = item.pair;
+    row.insertCell(1).innerText = item.datetime;
+    row.insertCell(2).innerText = item.news;
+
+    // ACTION CELL (recreated, not stored)
+    const actionCell = row.insertCell(3);
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "Delete";
+    delBtn.className = "action-btn btn-delete";
+    delBtn.onclick = function () {
+      row.remove();
+      count--;
+      saveTable();
+    };
+
+    actionCell.appendChild(delBtn);
+    count++;
+  });
+}
+
+// SAVE table every time a new row is added
+function saveTable() {
+  const tbody = document.querySelector("#eventTable tbody");
+  const rows = tbody.rows;
+  const data = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    data.push({
+      pair: rows[i].cells[0].innerText,
+      datetime: rows[i].cells[1].innerText,
+      news: rows[i].cells[2].innerText
+    });
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+const originalAddEvent = addEvent;
+addEvent = function () {
+  originalAddEvent();
+  saveTable();
+};
+window.onload = loadTable;
+// ------------ Trading Errors ------------
+const errorInput = document.getElementById('errorInput');
+const addErrorBtn = document.getElementById('addErrorBtn');
+const errorsList = document.getElementById('errorsList');
+
+let tradingErrors = [];
+
+// Load saved errors
+try {
+  const savedErrors = JSON.parse(localStorage.getItem('tj_trading_errors'));
+  if (Array.isArray(savedErrors)) tradingErrors = savedErrors;
+} catch (e) {
+  tradingErrors = [];
+}
+
+function renderErrors() {
+  errorsList.innerHTML = '';
+
+  tradingErrors.forEach((err, idx) => {
+    const div = document.createElement('div');
+    div.className = 'rule';
+    div.innerHTML = `
+      <span style="flex:1">${err}</span>
+      <button data-idx="${idx}" style="background:none;border:0;color:#d23;cursor:pointer">✖</button>
+    `;
+    errorsList.appendChild(div);
+  });
+
+  try {
+    localStorage.setItem('tj_trading_errors', JSON.stringify(tradingErrors));
+  } catch (e) {}
+}
+
+addErrorBtn.addEventListener('click', () => {
+  const val = errorInput.value.trim();
+  if (!val) return;
+  tradingErrors.push(val);
+  errorInput.value = '';
+  renderErrors();
+});
+
+errorsList.addEventListener('click', (e) => {
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const idx = Number(btn.dataset.idx);
+  if (!isNaN(idx)) {
+    tradingErrors.splice(idx, 1);
+    renderErrors();
+  }
+});
+
+renderErrors();
+
+
+  </script>
+</body>
+</html>
